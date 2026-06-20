@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini CRM</title>
+</head>
+<body>
+  <h1>Leads</h1>
+  <ul id="leads-list"></ul>
+  <h2>Add a Lead</h2>
+<form id="lead-form">
+  <input type="text" id="name" placeholder="Name" required>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="text" id="source" placeholder="Source" required>
+  <button type="submit">Add Lead</button>
+</form>
+
+  <script>document.getElementById('lead-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  fetch('/leads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      source: document.getElementById('source').value
+    })
+  }).then(() => location.reload());
+});
+    fetch('/leads')
+      .then(response => response.json())
+      .then(leads => {
+         const list = document.getElementById('leads-list');
+        leads.forEach(lead => {
+  const item = document.createElement('li');
+  item.textContent = lead.name + ' - ' + lead.email + ' (' + lead.status + ') ';
+
+  const select = document.createElement('select');
+  ['new', 'contacted', 'converted'].forEach(statusOption => {
+    const option = document.createElement('option');
+    option.value = statusOption;
+    option.textContent = statusOption;
+    if (statusOption === lead.status) option.selected = true;
+    select.appendChild(option);
+  });
+
+  select.addEventListener('change', function() {
+    fetch('/leads/' + lead.id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: select.value })
+    }).then(() => location.reload());
+  });
+
+  item.appendChild(select);
+  const notesList = document.createElement('ul');
+  lead.notes.forEach(note => {
+    const noteItem = document.createElement('li');
+    noteItem.textContent = note;
+    notesList.appendChild(noteItem);
+  });
+  item.appendChild(notesList);
+
+  const noteInput = document.createElement('input');
+  noteInput.type = 'text';
+  noteInput.placeholder = 'Add a note';
+
+  const noteButton = document.createElement('button');
+  noteButton.textContent = 'Add Note';
+  noteButton.addEventListener('click', function() {
+    fetch('/leads/' + lead.id + '/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note: noteInput.value })
+    }).then(() => location.reload());
+  });
+
+  item.appendChild(noteInput);
+  item.appendChild(noteButton);
+  list.appendChild(item);
+});
+      });
+  </script>
+</body>
+</html>
