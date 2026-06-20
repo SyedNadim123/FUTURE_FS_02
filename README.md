@@ -1,4 +1,4 @@
-# Mini CRM
+# Client Lead Management System (Mini CRM)
 
 This project is the second task of the Future Interns Full Stack Web Development
 internship. It is a simple client lead management system, built to demonstrate
